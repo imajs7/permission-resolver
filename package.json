@@ -34,7 +34,6 @@
     "./frontend": "./dist/frontend/PermissionClient.js"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.6.3",
     "@types/json-logic-js": "^2.0.8",
     "typescript": "^5.2.0"
   }
