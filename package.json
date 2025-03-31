@@ -1,0 +1,33 @@
+{
+  "name": "@merncloud/permission-resolver",
+  "version": "1.0.12",
+  "description": "Reusable RBAC + ABAC permission resolver for Node.js",
+  "author": "Anurag Jaisingh",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "keywords": [
+    "rbac",
+    "abac",
+    "authorization",
+    "permissions",
+    "keycloak",
+    "jwt"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "json-logic-js": "^2.0.2"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./frontend": "./dist/frontend/PermissionClient.js"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@types/json-logic-js": "^2.0.8",
+    "typescript": "^5.2.0"
+  }
+}
