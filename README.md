@@ -63,9 +63,14 @@ app.get("/permissions", async (req, res) => {
 
 ```ts
 import { Pool } from "pg";
-import { createResolverFromSource, PermissionService } from "@merncloud/permission-resolver";
+import {
+  createResolverFromSource,
+  PermissionService,
+} from "@merncloud/permission-resolver";
 
-const pool = new Pool({ /* your pg config */ });
+const pool = new Pool({
+  /* your pg config */
+});
 
 const resolver = await createResolverFromSource(async () => {
   const result = await pool.query("SELECT * FROM permissions");
@@ -78,7 +83,110 @@ const resolver = await createResolverFromSource(async () => {
 });
 
 PermissionService.init(resolver.getRules());
+
+///// You can create a RbacService class and use it like this
+
+import { RowDataPacket } from "mysql2";
+import { getDBPool } from "./db";
+import { PermissionService } from "@merncloud/permission-resolver";
+
+class RbacSingleton {
+  private resolver: any = null;
+  private isInitialized = false;
+  private initPromise: Promise<any> | null = null;
+
+  async init() {
+    if (this.isInitialized) return this.resolver;
+    if (this.initPromise) return this.initPromise;
+
+    this.initPromise = this.doInit();
+    return this.initPromise;
+  }
+
+  private async doInit() {
+    try {
+      // Fetch permissions from database
+      const pool = getDBPool();
+      const [rows] = await pool.query("SELECT * FROM permissions");
+      const result = rows as RowDataPacket[];
+
+      // Transform database rows to permission rules format
+      const permissionRules = result.map((row) => ({
+        resource: row.resource,
+        action: row.action,
+        allowedRoles: row.allowed_roles,
+        attributeCondition: row.attribute_condition,
+      }));
+
+      // Initialize PermissionService with rules
+      PermissionService.init(permissionRules);
+      this.resolver = PermissionService.getInstance();
+      this.isInitialized = true;
+
+      console.log(
+        "RBAC singleton initialized with",
+        permissionRules.length,
+        "rules"
+      );
+      return this.resolver;
+    } catch (error) {
+      this.initPromise = null; // Reset promise on error
+      console.error("Failed to initialize RBAC singleton:", error);
+      throw error;
+    }
+  }
+
+  getResolver() {
+    if (!this.isInitialized) {
+      throw new Error("RBAC not initialized. Call rbacInstance.init() first.");
+    }
+    return this.resolver;
+  }
+
+  async reload() {
+    this.isInitialized = false;
+    this.initPromise = null;
+    this.resolver = null;
+    return await this.init();
+  }
+}
+
+// Export singleton instance
+export const rbacInstance = new RbacSingleton();
+
+// index.ts
+import { rbacInstance } from "./your-path/RbacSingleton";
+
+await rbacInstance.init();
+
+/// auth service
+import { rbacInstance } from "../../../config/RbacSingleton";
+
+export class AuthService {
+  constructor() {}
+
+  async getPermissions() {
+    const resolver = rbacInstance.getResolver();
+    const permissions = await resolver.getRules();
+    return permissions;
+  }
+}
+
+/// auth controller
+import { Request, Response } from "express";
+import { AuthService } from "../services/auth.service";
+
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
+  getPermissions = async (req: Request, res: Response) => {
+    const permissions = await this.authService.getPermissions();
+    res.json(permissions);
+  };
+}
 ```
+
+![DB Table](./src/table.png)
 
 ### 3. Create Middleware for Access Control
 
@@ -174,7 +282,7 @@ const Component = () => {
 You can convert permissions into a flat list like:
 
 ```ts
-["document:read", "document:write"]
+["document:read", "document:write"];
 ```
 
 Using:

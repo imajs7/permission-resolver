@@ -1,6 +1,6 @@
 {
   "name": "@merncloud/permission-resolver",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Reusable RBAC + ABAC permission resolver for Node.js",
   "author": "Anurag Jaisingh",
   "main": "dist/index.js",
@@ -20,7 +20,7 @@
   "bugs": {
     "url": "https://git@github.com:imajs7/permission-resolver.git/issues"
   },
-  "homepage": "https://git@github.com:imajs7/permission-resolver.git#readme",
+  "homepage": "https://git@github.com:imajs7/permission-resolver.git",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
