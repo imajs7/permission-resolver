@@ -1,6 +1,6 @@
 {
   "name": "@merncloud/permission-resolver",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "Reusable RBAC + ABAC permission resolver for Node.js",
   "author": "Anurag Jaisingh",
   "main": "dist/index.js",
